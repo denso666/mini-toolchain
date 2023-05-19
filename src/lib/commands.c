@@ -34,47 +34,6 @@ int onlyOctal(const char* optr)
     return 1; // null provided 
 }
 
-void __uname__(void)
-{
-    struct utsname buf;
-    if (!uname(&buf))
-    {
-        fprintf(stdout, "Name\t\t%s\n", buf.sysname);
-        fprintf(stdout, "Release\t\t%s\n", buf.release);
-        fprintf(stdout, "Version\t\t%s\n", buf.version);
-        fprintf(stdout, "Proccesor\t%s\n", buf.machine);
-        exit(0);
-    }
-    else
-    {
-        perror("uname");
-        exit(1);
-    }
-}
-
-void __ls__(const char* path)
-{
-    DIR *d;
-    struct dirent *dir;
-    d = opendir(path);
-    if (d)
-    {	
-        fprintf(stdout, "%s:\n", path);
-        while ((dir = readdir(d)) != NULL)
-        {
-            fprintf(stdout, "%s\n", dir->d_name);
-        }
-        closedir(d);
-        fprintf(stdout, "\n");
-        exit(0);
-    }
-    else
-    {
-        fprintf(stderr, "ls: cannot open directory '%s': %s\n", path, strerror(errno));
-        exit(1);
-    }
-}
-
 void __sleep__(const int intc, const char* intv[])
 {
     int status;
@@ -105,45 +64,7 @@ void __sleep__(const int intc, const char* intv[])
     }
 }
 
-int __cat__(const char* path)
-{
-    struct stat st;
-    // exist?
-    if (stat(path, &st) != -1)
-    {
-        // is a directory?
-        if ((st.st_mode & S_IFMT) == S_IFDIR)
-        {
-            fprintf(stderr, "cat: %s: Is a directory\n", path);
-            exit(1);
-        }
-        else
-        {
-            int fd = open(path, O_RDONLY);
-            if (fd)
-            {
-                char* buf = (char*)malloc(1);
-                while (read(fd, buf, 1))
-                {
-                    fprintf(stdout, "%s", buf);
-                }
-                close(fd);
-                free(buf);
-                exit(0);
-            }
-            else
-            {
-                fprintf(stderr, "cat: '%s' %s\n", path, strerror(errno));
-                exit(1);
-            }
-        }
-    }
-    else
-    {
-        fprintf(stderr, "cat: '%s' %s\n", path, strerror(errno));
-        exit(1);
-    }
-}
+
 
 void __lsmod__(void)
 {

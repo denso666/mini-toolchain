@@ -35,32 +35,12 @@ int valid_time_interval(const char*);
 int onlyOcta(const char*);
 
 /**
- * Print system information
- * @return null
- */
-void __uname__(void);
-
-/**
- * List directory contents
- * @param path target directory path
- * @return null
- */
-void __ls__(const char*);
-
-/**
  * Delay for a specified amount of time
  * @param intc interval counter
  * @param intv interval values
  * @return null
  */
 void __sleep__(const int, const char*[]);
-
-/**
- * Concatenate files and print on the standard output
- * @param path target file path
- * @return status of read file
- */
-int __cat__(const char*);
 
 /**
  * Show the status of modules in the Linux Kernel

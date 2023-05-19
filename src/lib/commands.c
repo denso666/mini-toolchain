@@ -19,21 +19,6 @@ int valid_time_interval(const char* nptr)
     return 1; // null ptr provided
 }
 
-int onlyOctal(const char* optr)
-{
-    if (optr != NULL)
-    {
-        int i = 0;
-        while (optr[i] != '\0')
-        {
-            if (optr[i] < '0' || optr[i] > '7') return 2; // invalid character provided
-            i++;
-        }
-        return 0; // valid octal number
-    }
-    return 1; // null provided 
-}
-
 void __sleep__(const int intc, const char* intv[])
 {
     int status;
@@ -64,8 +49,6 @@ void __sleep__(const int intc, const char* intv[])
     }
 }
 
-
-
 void __lsmod__(void)
 {
     int fd = open("/proc/modules", O_RDONLY);
@@ -86,26 +69,6 @@ void __lsmod__(void)
         exit(1);
     }
 }
- 
-void __uptime__(void)
-{
-    struct sysinfo s_info;
-    if (!sysinfo(&s_info))
-    {
-        long seconds = s_info.uptime;
-        long hours = seconds/3600;
-        seconds %= 3600;
-        long minutes = seconds/60;
-        seconds %= 60;
-        fprintf(stdout, "up %ld hours, %ld minutes, %ld seconds\n", hours, minutes, seconds);
-        exit(0);
-    }
-    else
-    {
-        perror("uptime");
-        exit(1);
-    }
-}
 
 void __mkdir__(const char* path)
 {
@@ -123,115 +86,8 @@ void __mkdir__(const char* path)
     exit(1);
 }
 
-void __chown__(const char* path, const char* group, const char* user)
-{
-    struct passwd* pwd;
-    struct group* grp;
-    struct stat st;
-
-    // valid file
-    if (stat(path, &st) == -1)
-    {
-        perror("chown");
-        exit(1);
-    }
-    // group
-    grp = getgrnam(group);
-    if (!grp)
-    {
-        if (errno != 0) perror("chown");
-        else fprintf( stderr, "chown: the given name or gid was not found\n");
-        exit(1);
-    }
-    // user
-    pwd = getpwnam(user);
-    if (!pwd)
-    {
-        if (errno != 0) perror("chown");
-        else fprintf( stderr, "chown: the given name or uid was not found\n");
-        exit(1);
-    }
-    if (chown(path, pwd->pw_uid, grp->gr_gid))
-    {
-        perror("chown");
-        exit(1);
-    }
-    exit(0);
-}
-
-void __chmod__(const char* path, const char* permissions)
-{
-    struct stat st;
-
-    if (stat(path, &st) != 0)
-    {
-        fprintf(stderr, "chmod: %s: %s\n", path, strerror(errno));
-        exit(1);
-    }
-    else
-    {
-        if (strlen(permissions) == 3 && !onlyOctal(permissions))
-        {
-            int p = strtol(permissions, 0, 8);
-            if (chmod(path, p) != 0)
-            {
-                perror("chmod");
-                exit(1);
-            }
-            exit(0);
-        }
-        else
-        {
-            fprintf(stderr, "chmod: %s: invalid string permissions\n", permissions);
-            exit(1);
-        }
-    }
-}
-
-void __touch__(const char* path)
-{
-    struct stat st;
-    // exist
-    if (!stat(path, &st))
-    {
-        // is a directory
-        if ((st.st_mode & S_IFMT) == S_IFDIR)
-        {
-            fprintf(stderr, "touch: %s: Is a directory\n", path);
-            exit(1);
-        }
-        // update last access and modify date
-        else
-        {
-            struct utimbuf new_time;
-            time_t t = time(NULL);
-            new_time.actime = t;
-            new_time.modtime = t;
-            
-            if (utime(path, &new_time) != 0)
-            {
-                fprintf(stderr, "touch: %s: %s\n", path, strerror(errno));
-                exit(1);
-            }
-            exit(0);
-        }
-    }
-    // create file
-    else
-    {
-        if (creat(path, S_IRUSR | S_IWUSR | S_IROTH | S_IRGRP) < 0)
-        {
-            perror("touch");
-            exit(1);
-        }
-        exit(0);
-    }    
-}
-
 void __kill__(const char* pid, const char* sig)
 {
     fprintf(stderr, "kill: not implemented\n");
     exit(1);
 }
-
-

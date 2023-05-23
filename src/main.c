@@ -1,10 +1,11 @@
-#include "./include/commands.h"
+#include "./include/libs.h"
 
 int main(int argc, char const *argv[])
 {
     pid_t child_id;
     int status, group_status;
     const char* command = argv[0];
+
     // sleep 	-> OK
     if (!strcmp(command, "./sleep"))
     {
@@ -12,7 +13,7 @@ int main(int argc, char const *argv[])
         if (argc == 1)
         {
             printf("sleep: missing operan\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else __sleep__(argc, argv);
     }
@@ -24,7 +25,7 @@ int main(int argc, char const *argv[])
         {
             printf("uname: extra operand '%s'\n", argv[1]);
             printf("Usage: uname\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else __uname__();
     }
@@ -41,7 +42,7 @@ int main(int argc, char const *argv[])
                 else if (child_id < 0)
                 {
                     perror("fork");
-                    exit(1);
+                    exit(EXIT_FAILURE);
                 }
                 else 
                 {
@@ -59,7 +60,7 @@ int main(int argc, char const *argv[])
         if (argc == 1)
         {
             printf("cat: not provided file or directory\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else
         {
@@ -70,7 +71,7 @@ int main(int argc, char const *argv[])
                 else if (child_id < 0)
                 {
                     perror("fork");
-                    exit(1);
+                    exit(EXIT_FAILURE);
                 }
                 else 
                 {
@@ -89,7 +90,7 @@ int main(int argc, char const *argv[])
         {
             printf("lsmod: extra operand '%s'\n", argv[2]);
             printf("Usage: lsmod\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else __lsmod__();
     }
@@ -101,7 +102,7 @@ int main(int argc, char const *argv[])
         {
             printf("uptime: extra operand '%s'\n", argv[2]);
             printf("Usage: uptime\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else __uptime__();
     }
@@ -112,7 +113,7 @@ int main(int argc, char const *argv[])
         if (argc == 1)
         {
             printf("mkdir: missing operand\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else
         {
@@ -123,7 +124,7 @@ int main(int argc, char const *argv[])
                 else if (child_id < 0)
                 {
                     perror("fork");
-                    exit(1);
+                    exit(EXIT_FAILURE);
                 }
                 else 
                 {
@@ -142,7 +143,7 @@ int main(int argc, char const *argv[])
         {
             printf("chown: missing or extra operand\n");
             printf("Usage: chown -path -group -user\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else __chown__(argv[1], argv[2], argv[3]);
     }
@@ -153,7 +154,7 @@ int main(int argc, char const *argv[])
         {
             printf("chmod: missing operand\n");
             printf("Usage: chmod -path -permissions\n");
-            exit(1);			
+            exit(EXIT_FAILURE);			
         }
         else __chmod__(argv[1], argv[2]);
     }
@@ -164,26 +165,57 @@ int main(int argc, char const *argv[])
         {
             fprintf(stderr, "touch: missing operand\n");
             fprintf(stderr, "Usage: touch -path\n");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         else __touch__(argv[1]);
     }
     // kill     -> NOT IMPLEMENTED
     else if (!strcmp(command, "./kill"))
     {
-        if (argc != 3)
+        if (argc < 2 || argc > 3)
         {
-            fprintf(stderr, "kill: missing operand\n");
-            fprintf(stderr, "Usage: kill -pid [-sig, NULL])\n");
-            exit(1);
+            fprintf(stderr, "kill: missing or extra operand\n");
+            fprintf(stderr, "Usage: kill -pid [-sig, NULL to default signal 'TERM'])\n");
+            exit(EXIT_FAILURE);
         }
-        else __kill__(argv[1], argv[2]);
+        else
+        {
+            char* endptr;
+            errno = 0; /* Distinguish success/failure after 'strtol' call*/
+
+            // verify pid integrity
+            long pid = strtol(argv[1], endptr, 10);
+            if (errno != 0 || endptr == argv[1])
+            {
+                fprintf(stderr, "kill: invalid pid\n");
+                exit(EXIT_FAILURE);
+            }
+
+            // kill with DEFAULT signal
+            if (argc == 2)
+            {
+                __kill__(pid, DEFAULT_SIG);
+            }
+            // kill with CUSTOM signal
+            else
+            {
+                // verify signal integrity
+                errno = 0;
+                int sig = strtol(argv[2], endptr, 10);
+                if (errno != 0 || endptr == argv[2])
+                {
+                    fprintf(stderr, "kill: invalid signal\n");
+                    exit(EXIT_FAILURE);
+                }
+                __kill__(pid, sig);
+            }
+        }
     }
     // command not found
     else
     {
         printf("'%s' command not found\n", argv[0]);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     return 0;
 }

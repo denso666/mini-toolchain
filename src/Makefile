@@ -1,24 +1,30 @@
-LIB=./lib
-INC=./include
-OUT=../output
-KREL=$(shell uname -r)
-PWD=$(shell pwd)
+OUT_DIR=../output/
+KERNEL=_$(shell uname -s)_$(shell uname -m)
 CC=gcc
-CFLAGS=-Wall -g
-CROSSC=
-CMDS=sleep uname ls cat lsmod uptime mkdir chown chmod touch
+CFLAGS=-c -Wall -fpic
+CROSS_COMPILE=
+COMMANDS = $(basename $(filter %.c, $(wildcard ./*/*)))
+OBJS = $(foreach cmd,$(addsuffix .so,$(COMMANDS)),$(addprefix $(addsuffix lib,$(dir $(cmd))),$(notdir $(cmd))))
+LIB_FLAGS = $(foreach cmd, $(notdir $(COMMANDS)), $(addsuffix $(cmd),-l))
+SO_FLAG = -Llib
+LD_CMDS = $(notdir $(COMMANDS))
+BIN = $(OUT_DIR)toolchain$(KERNEL)
 
-.PHONY: clean folders
+.PHONY: clean
 
-all: folders commands
-	${CROSSC}${CC} ${CFLAGS} main.c ${OUT}/commands_${KREL}.o -o ${OUT}/bin_${KREL}.o
-	@$(foreach cmd, $(CMDS), ln -f -s ${PWD}/${OUT}/bin_${KREL}.o ${OUT}/$(cmd);)
+all: $(BIN)
 
-commands: ${LIB}/commands.c ${INC}/commands.h
-	${CROSSC}${CC} ${CFLAGS} -c ${LIB}/commands.c -o ${OUT}/commands_${KREL}.o
+$(BIN): $(OBJS) main.c
+	mkdir -p $(OUT_DIR)
+	$(CROSS_COMPILE)$(CC) main.c $(LIB_FLAGS) $(SO_FLAG) -Wall -o $@
+	@$(foreach cmd, $(LD_CMDS), ln -f -s $(shell pwd)/$(BIN) $(OUT_DIR)$(cmd);)
 
-folders:
-	mkdir -p ${OUT}
+%.o: %.c
+	$(CROSS_COMPILE)$(CC) $(CFLAGS) $< -o $@
 
+lib%.so: %.o
+	$(CROSS_COMPILE)$(CC) -shared $< -o $@
+	
 clean:
-	@rm -f -r ${OUT}
+	@rm -f ./lib/*.so
+	@rm -f -r ${OUT_DIR}

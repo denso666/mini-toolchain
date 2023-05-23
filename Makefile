@@ -1,10 +1,10 @@
-.PHONY: x86_64 arm clean
+.PHONY: arm clean
 
-x86_64:
-	cd ./src && make CROSSC=
+all:
+	make -C ./src/ CROSS_COMPILE=
 
 arm:
-	cd ./src && make CROSSC=arm-linux-gnueabihf-
+	cd ./src && make CROSS_COMPILE=arm-linux-gnueabihf-
 
 clean:
-	cd ./src && make clean
+	make -C ./src/ clean

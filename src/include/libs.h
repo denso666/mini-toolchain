@@ -12,5 +12,6 @@
 #include "./kill.h"
 #include "./cat.h"
 #include "./ls.h"
+#include "./rm.h"
 
 #endif

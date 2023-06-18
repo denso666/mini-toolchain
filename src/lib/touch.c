@@ -1,5 +1,4 @@
 #include "../include/touch.h"
-#include <stdlib.h>
 
 void __touch__(const char* path)
 {
@@ -23,7 +22,7 @@ void __touch__(const char* path)
             
             if (utime(path, &new_time) != 0)
             {
-                fprintf(stderr, "touch: %s: %s\n", path, strerror(errno));
+                perror("touch");
                 exit(EXIT_FAILURE);
             }
             exit(EXIT_SUCCESS);

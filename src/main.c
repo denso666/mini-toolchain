@@ -1,4 +1,5 @@
 #include "./include/libs.h"
+#include <sys/wait.h>
 
 int main(int argc, char const *argv[])
 {
@@ -135,6 +136,17 @@ int main(int argc, char const *argv[])
             return group_status;
         }
     }
+    // rm       -> Verify
+    else if (!strcmp(command, "./rm"))
+    {
+        if (argc < 2 || argc > 3)
+        {
+            printf("rm: missing or extra operand\n");
+            printf("Usage: rm [-r] -path\n");
+            exit(EXIT_FAILURE);
+        }
+        else __rm__(--argc, ++argv);
+    }
     // chown	-> OK
     else if (!strcmp(command, "./chown"))
     {
@@ -147,7 +159,7 @@ int main(int argc, char const *argv[])
         }
         else __chown__(argv[1], argv[2], argv[3]);
     }
-    // chmod 	-> NOT IMPLEMENTED
+    // chmod 	-> OK
     else if (!strcmp(command, "./chmod"))
     {
         if (argc != 3)
@@ -169,7 +181,7 @@ int main(int argc, char const *argv[])
         }
         else __touch__(argv[1]);
     }
-    // kill     -> NOT IMPLEMENTED
+    // kill     -> OK
     else if (!strcmp(command, "./kill"))
     {
         if (argc < 2 || argc > 3)
@@ -181,27 +193,22 @@ int main(int argc, char const *argv[])
         else
         {
             char* endptr;
-            errno = 0; /* Distinguish success/failure after 'strtol' call*/
+            errno = 0;
 
             // verify pid integrity
-            long pid = strtol(argv[1], endptr, 10);
+            long pid = strtol(argv[1], &endptr, 10);
             if (errno != 0 || endptr == argv[1])
             {
                 fprintf(stderr, "kill: invalid pid\n");
                 exit(EXIT_FAILURE);
             }
 
-            // kill with DEFAULT signal
-            if (argc == 2)
-            {
-                __kill__(pid, DEFAULT_SIG);
-            }
-            // kill with CUSTOM signal
+            if (argc == 2) __kill__(pid, DEFAULT_SIG);
             else
             {
                 // verify signal integrity
                 errno = 0;
-                int sig = strtol(argv[2], endptr, 10);
+                int sig = strtol(argv[2], &endptr, 10);
                 if (errno != 0 || endptr == argv[2])
                 {
                     fprintf(stderr, "kill: invalid signal\n");

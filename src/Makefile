@@ -15,7 +15,8 @@ BIN = $(OUT_DIR)toolchain$(KERNEL)
 all: $(BIN)
 
 $(BIN): $(OBJS) main.c
-	mkdir -p $(OUT_DIR)
+	@export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/lib/
+	@mkdir -p $(OUT_DIR)
 	$(CROSS_COMPILE)$(CC) main.c $(LIB_FLAGS) $(SO_FLAG) -Wall -o $@
 	@$(foreach cmd, $(LD_CMDS), ln -f -s $(shell pwd)/$(BIN) $(OUT_DIR)$(cmd);)
 

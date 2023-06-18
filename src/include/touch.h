@@ -3,6 +3,7 @@
 
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <errno.h>
 #include <utime.h>

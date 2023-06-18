@@ -1,5 +1,4 @@
 #include "../include/cat.h"
-#include <stdlib.h>
 
 int __cat__(const char* path)
 {
@@ -10,8 +9,8 @@ int __cat__(const char* path)
         // is a directory?
         if ((st.st_mode & S_IFMT) == S_IFDIR)
         {
-            fprintf(stderr, "cat: %s: Is a directory\n", path);
-            exit(EXIT_FAILURE);
+            errno = EISDIR;
+            goto error;
         }
         else
         {
@@ -27,16 +26,12 @@ int __cat__(const char* path)
                 free(buf);
                 exit(EXIT_SUCCESS);
             }
-            else
-            {
-                fprintf(stderr, "cat: '%s' %s\n", path, strerror(errno));
-                exit(EXIT_FAILURE);
-            }
+            else goto error;
         }
     }
-    else
-    {
-        fprintf(stderr, "cat: '%s' %s\n", path, strerror(errno));
-        exit(EXIT_FAILURE);
-    }
+    else goto error;
+
+error:
+    perror("cat");
+    exit(EXIT_FAILURE);
 }
